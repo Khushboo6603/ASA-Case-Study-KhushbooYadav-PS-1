@@ -1,0 +1,110 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>InvoiceFlow — PDF to Decision</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14171f;--mut:#6b7280;--line:#e5e7eb;--brand:#3b5bdb;--ok:#15803d;--okbg:#e8f6ee;--warn:#b45309;--warnbg:#fdf3e1;--bad:#b91c1c;--badbg:#fdeaea}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1218;--card:#181c25;--ink:#e8eaf0;--mut:#98a0b0;--line:#2a3040;--brand:#7c93ff;--ok:#4ade80;--okbg:#12261b;--warn:#fbbf24;--warnbg:#2b2210;--bad:#f87171;--badbg:#2e1416}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:24px;padding:12px 24px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.logo{font-weight:700;font-size:16px}.logo span{color:var(--brand)}
+nav button{background:none;border:0;padding:8px 14px;font:inherit;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent}nav button.on{color:var(--ink);border-color:var(--brand);font-weight:600}
+main{padding:20px 24px;max-width:1500px;margin:auto}.hide{display:none!important}
+.grid{display:grid;grid-template-columns:300px minmax(320px,1fr) minmax(380px,1.1fr);gap:16px;align-items:start}
+@media(max-width:1100px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}.card h3{margin:0 0 10px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+select,button.btn,.drop{width:100%;font:inherit;border-radius:8px;border:1px solid var(--line);padding:9px 10px;background:var(--card);color:var(--ink)}
+button.btn{cursor:pointer;font-weight:600;margin-top:8px}button.primary{background:var(--brand);color:#fff;border-color:var(--brand)}button.btn:disabled{opacity:.5;cursor:wait}
+.drop{border-style:dashed;text-align:center;color:var(--mut);cursor:pointer;margin-top:10px}.drop.over{border-color:var(--brand);color:var(--brand)}
+.hint{color:var(--mut);font-size:12px;margin-top:8px}
+iframe{width:100%;height:640px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.stage{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.stage:last-child{border:0}
+.dot{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:var(--line);color:var(--mut)}
+.s-running .dot{background:var(--brand);color:#fff;animation:pulse 1s infinite}.s-done .dot{background:var(--okbg);color:var(--ok)}.s-warn .dot{background:var(--warnbg);color:var(--warn)}.s-fail .dot{background:var(--badbg);color:var(--bad)}.s-skipped .dot{opacity:.6}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(59,91,219,.2)}}
+.stage b{display:block}.sum{color:var(--mut)}.det{margin:6px 0 0;padding-left:16px;color:var(--mut);font-size:12.5px}.det li{margin:2px 0}
+.verdict{margin-top:14px;border-radius:10px;padding:14px;border:1px solid}
+.v-APPROVE{background:var(--okbg);border-color:var(--ok);color:var(--ok)}.v-NEEDS_REVIEW{background:var(--warnbg);border-color:var(--warn);color:var(--warn)}.v-REJECT{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.verdict h2{margin:0 0 6px;font-size:20px}.verdict .why{color:var(--ink)}.verdict ul{margin:6px 0 0 16px;padding:0}
+pre{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font:12px/1.5 ui-monospace,monospace;color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}.kpi small{color:var(--mut);display:block}.kpi strong{font-size:26px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--bg)}.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700}
+.chips{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:4px 12px;cursor:pointer;font:inherit}.chip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.two{display:grid;grid-template-columns:1.6fr 1fr;gap:16px}@media(max-width:1000px){.two{grid-template-columns:1fr}}
+#drawer{position:fixed;right:0;top:0;bottom:0;width:min(560px,100%);background:var(--card);border-left:1px solid var(--line);padding:20px;overflow:auto;box-shadow:-8px 0 24px rgba(0,0,0,.15);z-index:10}
+.x{float:right;background:none;border:0;font-size:22px;cursor:pointer;color:var(--mut)}
+.err{color:var(--bad);font-weight:600;margin-top:10px}
+</style></head><body>
+<header><div class="logo">Invoice<span>Flow</span> <small style="font-weight:400;color:var(--mut)">PDF → reasoned decision</small></div>
+<nav><button id="t-run" class="on" onclick="tab('run')">Process</button><button id="t-dash" onclick="tab('dash')">Dashboard</button></nav></header>
+<main>
+<section id="v-run"><div class="grid">
+ <div class="card"><h3>1 · Choose input</h3>
+  <select id="sample"></select>
+  <button class="btn primary" id="go" onclick="runSelected()">▶ Run process</button>
+  <div class="drop" id="drop" onclick="fileIn.click()">Drop your own invoice PDF here<br><small>or click to browse</small></div><input type="file" id="fileIn" accept="application/pdf" class="hide">
+  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+  <h3>Demo tools</h3>
+  <button class="btn" id="suite" onclick="runSuite()">⏩ Run full demo suite (all 12)</button>
+  <button class="btn" onclick="resetAll()">↺ Reset history</button>
+  <div class="hint">History matters: duplicate detection and split-PO tracking read earlier runs. Reset before a fresh demo, then run samples <b>in order</b> (01 → 12).</div>
+  <div class="err" id="err"></div>
+ </div>
+ <div class="card"><h3>Invoice</h3><div style="max-height:700px;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff"><img id="pdf" alt="invoice preview" style="width:100%;display:block"></div><div class="hint"><a id="pdflink" target="_blank" style="color:var(--brand)">Open original PDF</a></div></div>
+ <div class="card"><h3>2 · Live run</h3><div id="verdict"></div><div id="stages"></div></div>
+</div></section>
+
+<section id="v-dash" class="hide">
+ <div class="kpis" id="kpis"></div>
+ <div class="two">
+  <div class="card"><h3>Run history</h3><div class="chips" id="chips"></div>
+   <table><thead><tr><th>#</th><th>Time</th><th>Vendor</th><th>Invoice</th><th>PO</th><th>Amount</th><th>Decision</th></tr></thead><tbody id="rows"></tbody></table><div class="hint" id="empty"></div></div>
+  <div class="card"><h3>PO utilisation (approved invoices)</h3><table><thead><tr><th>PO</th><th>Vendor</th><th>Billed / PO</th></tr></thead><tbody id="pos"></tbody></table></div>
+ </div>
+</section></main>
+<div id="drawer" class="hide"></div>
+<script>
+const STAGES=[["ingest","Receive invoice"],["extract","Read & extract fields"],["validate","Validate completeness & maths"],["vendor","Check approved vendor"],["duplicate","Duplicate detection"],["po_match","Match to purchase order"],["decision","Final decision"]];
+const ICON={running:"…",done:"✓",warn:"!",fail:"✗",skipped:"–",pending:""};
+const LABEL={APPROVE:"Approved",NEEDS_REVIEW:"Needs review",REJECT:"Rejected"};
+const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money=n=>n==null?"—":"$"+Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+let busy=false, filter="ALL";
+function tab(t){["run","dash"].forEach(x=>{$("v-"+x).classList.toggle("hide",x!==t);$("t-"+x).classList.toggle("on",x===t)});if(t==="dash")loadDash()}
+function initStages(){ $("stages").innerHTML=STAGES.map(([k,l])=>`<div class="stage s-pending" id="st-${k}"><div class="dot"></div><div><b>${l}</b><span class="sum">Waiting</span><ul class="det"></ul></div></div>`).join(""); $("verdict").innerHTML=""; }
+function paint(e){const el=$("st-"+e.stage);if(!el)return;el.className="stage s-"+e.status;el.querySelector(".dot").textContent=ICON[e.status]||"";
+ el.querySelector(".sum").textContent=e.summary;el.querySelector(".det").innerHTML=(e.detail||[]).map(d=>`<li>${esc(d.replace(/^[✓✗]\s*/,""))}</li>`).join("")}
+function verdict(r){ $("verdict").innerHTML=`<div class="verdict v-${r.decision}"><h2>${LABEL[r.decision]}</h2><div class="why"><ul>${r.reasons.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div><p style="margin:10px 0 0"><b>Next action:</b> ${esc(r.next_action)}</p></div>`
+ +(r.vendor_message?`<h3 style="margin-top:14px">Drafted message to vendor (not sent — human reviews first)</h3><pre>${esc(r.vendor_message)}</pre>`:"")}
+function runOne(src,file){return new Promise(res=>{ initStages(); $("err").textContent=""; showPdf(src,file);
+ const es=new EventSource(`/api/stream?src=${src}&file=${encodeURIComponent(file)}`); let done=false;
+ es.onmessage=m=>{const e=JSON.parse(m.data); if(e.stage==="saved"){done=true;es.close();res();return}
+  if(e.stage==="error"){$("err").textContent=e.summary;done=true;es.close();res();return}
+  paint(e); if(e.stage==="decision"&&e.status!=="running")verdict(e.data)};
+ es.onerror=()=>{if(!done){$("err").textContent="Connection lost — please retry.";es.close();res()}}})}
+function showPdf(src,f){const n=encodeURIComponent(f);$("pdf").src=`/preview/${src}/${n}.png?`+Date.now();$("pdflink").href=`/file/${src}/${n}`}
+function lock(b){busy=b;["go","suite"].forEach(i=>$(i).disabled=b)}
+async function runSelected(){if(busy)return;lock(true);await runOne("samples",$("sample").value);lock(false)}
+async function runSuite(){if(busy)return;if(!confirm("This resets history and runs all 12 sample invoices in order. Continue?"))return;lock(true);await fetch("/api/reset",{method:"POST"});
+ const list=await (await fetch("/api/samples")).json();for(const f of list){$("sample").value=f;await runOne("samples",f);await new Promise(r=>setTimeout(r,1200))}lock(false)}
+async function resetAll(){if(busy||!confirm("Clear all run history?"))return;await fetch("/api/reset",{method:"POST"});initStages();loadDash()}
+async function upload(f){if(busy)return;const fd=new FormData();fd.append("file",f);const r=await fetch("/api/upload",{method:"POST",body:fd});const j=await r.json();if(!r.ok){$("err").textContent=j.error;return}lock(true);await runOne(j.src,j.file);lock(false)}
+$("fileIn").onchange=e=>e.target.files[0]&&upload(e.target.files[0]);
+const dz=$("drop");dz.ondragover=e=>{e.preventDefault();dz.classList.add("over")};dz.ondragleave=()=>dz.classList.remove("over");dz.ondrop=e=>{e.preventDefault();dz.classList.remove("over");e.dataTransfer.files[0]&&upload(e.dataTransfer.files[0])};
+
+async function loadDash(){const [rr,pp]=await Promise.all([fetch("/api/runs").then(r=>r.json()),fetch("/api/pos").then(r=>r.json())]);const s=rr.stats;
+ $("kpis").innerHTML=[["Invoices processed",s.total],["Approved",s.APPROVE],["Needs review",s.NEEDS_REVIEW],["Rejected",s.REJECT],["Approved value",money(s.approved_amount)],["Held / rejected value",money(s.held_amount)]].map(([a,b])=>`<div class="kpi"><small>${a}</small><strong>${b}</strong></div>`).join("");
+ $("chips").innerHTML=["ALL","APPROVE","NEEDS_REVIEW","REJECT"].map(k=>`<button class="chip ${filter===k?"on":""}" onclick="filter='${k}';loadDash()">${k==="ALL"?"All":LABEL[k]}</button>`).join("");
+ const rows=rr.runs.filter(r=>filter==="ALL"||r.decision===filter);
+ $("rows").innerHTML=rows.map(r=>`<tr onclick="openRun(${r.id})"><td>${r.id}</td><td>${esc(r.ts.slice(5,16))}</td><td>${esc(r.vendor_key||r.vendor||"—")}</td><td>${esc(r.invoice_no||"—")}</td><td>${esc(r.po||"—")}</td><td>${money(r.total)}</td><td><span class="pill v-${r.decision}">${LABEL[r.decision]}</span></td></tr>`).join("");
+ $("empty").textContent=rows.length?"Click a row for the full step-by-step trace.":"No runs yet — process an invoice first.";
+ $("pos").innerHTML=pp.map(p=>`<tr><td>${p.po_number}</td><td>${esc(p.vendor)}</td><td>${money(p.billed)} / ${money(p.po_amount)}</td></tr>`).join("")}
+async function openRun(id){const r=await fetch("/api/runs/"+id).then(x=>x.json());const f=r.result.fields;
+ $("drawer").innerHTML=`<button class="x" onclick="$('drawer').classList.add('hide')">×</button><h2 style="margin-top:0">Run #${r.id} · ${esc(r.filename)}</h2><div class="verdict v-${r.decision}"><h2>${LABEL[r.decision]}</h2><ul>${r.reasons.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+ <h3 style="margin-top:16px;color:var(--mut);font-size:12px;text-transform:uppercase">Extracted</h3><pre>${esc(JSON.stringify({vendor:f.vendor,invoice_no:f.invoice_no,date:f.date,po_ref:f.po_ref,subtotal:f.subtotal,tax:f.tax,total:f.total,line_items:f.line_items},null,2))}</pre>
+ <h3 style="color:var(--mut);font-size:12px;text-transform:uppercase">Trace</h3>`+r.events.map(e=>`<div class="stage s-${e.status}"><div class="dot">${ICON[e.status]||""}</div><div><b>${esc((STAGES.find(s=>s[0]===e.stage)||[0,e.stage])[1])}</b><span class="sum">${esc(e.summary)}</span><ul class="det">${(e.detail||[]).map(d=>`<li>${esc(d)}</li>`).join("")}</ul></div></div>`).join("")
+ +(r.result.vendor_message?`<h3 style="color:var(--mut);font-size:12px;text-transform:uppercase">Draft message</h3><pre>${esc(r.result.vendor_message)}</pre>`:"")
+ +`<button class="btn" onclick="window.open('/file/${r.src}/${encodeURIComponent(r.filename)}')">Open PDF</button> <a href="data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(r.result,null,2))}" download="run-${r.id}.json"><button class="btn">Download decision JSON</button></a>`;
+ $("drawer").classList.remove("hide")}
+(async()=>{const l=await (await fetch("/api/samples")).json();$("sample").innerHTML=l.map(f=>`<option>${f}</option>`).join("");initStages();if(l[0])showPdf("samples",l[0]);
+ $("sample").onchange=()=>showPdf("samples",$("sample").value)})();
+</script></body></html>

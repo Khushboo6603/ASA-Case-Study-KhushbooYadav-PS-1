@@ -1,0 +1,8 @@
+po_number,vendor,po_amount,currency,status
+PO-1001,Acme Office Supplies,4320.00,USD,open
+PO-1002,Northwind Logistics,12000.00,USD,open
+PO-1003,BrightLine IT Services,8200.00,USD,open
+PO-1004,Globex Packaging,2750.00,USD,open
+PO-1005,Summit Cleaning Co,1800.00,USD,open
+PO-1006,Acme Office Supplies,950.00,USD,open
+PO-1007,Globex Packaging,2750.00,USD,open
